@@ -18,20 +18,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
@@ -45,9 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -55,6 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import wiki.qingyun.raspi.R
+import wiki.qingyun.raspi.components.ConferItem
+import wiki.qingyun.raspi.components.ImageButton
+import wiki.qingyun.raspi.components.NaviItem
 import wiki.qingyun.raspi.ui.theme.RaspiTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -90,7 +86,7 @@ fun Main() {
 fun TopAppbar(openDraw : () -> Unit) {
     CenterAlignedTopAppBar(
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0xFFFFFFFF)
+            containerColor = Color(0xFFD8E9E4)
         ),
         title = {  },
         navigationIcon = {
@@ -158,7 +154,7 @@ fun ButtonGroup() {
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
-            .background(color = Color(0xFFFFFFFF)),
+            .background(color = Color(0xFFD8E9E4)),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         ImageButton(
@@ -201,155 +197,19 @@ fun ConferList() {
             .verticalScroll(rememberScrollState())
     ) {
         repeat(10) {
-            ConferItem()
-        }
-    }
-}
-
-@Composable
-fun ConferItem() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(170.dp)
-            .background(color = Color(0xFFFFFFFF)),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxHeight(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Card(
-                modifier = Modifier
-                    .width(350.dp)
-                    .height(150.dp)
-                    .background(Color(0xFFFFFFFF)),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFFFFFFF)
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 6.dp
-                )
-            ) {
-                Column {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 10.dp, top = 10.dp)
-                    ) {
-                        Text(
-                            text = "会议主题",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold)
-                    }
-                    ConferTime(
-                        startTime = "18:00",
-                        endTime = "18:30",
-                        date = "2023年12月05日"
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(35.dp)
-                            .padding(start = 10.dp, top = 10.dp)
-                    ) {
-                        Text(
-                            text = "发起人",
-                            fontSize = 13.sp
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ConferTime(startTime : String, endTime : String, date : String) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(55.dp)
-            .background(color = Color(0xFFFFFFFF)),
-        horizontalArrangement = Arrangement.SpaceEvenly
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxHeight(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = startTime,
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = date,
-                fontSize = 10.sp
-            )
-        }
-        Column(
-            modifier = Modifier
-                .width(60.dp)
-                .padding(top = 10.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "待开始",
-                fontSize = 12.sp,
-                color = Color(0xFFFF9800)
-            )
-            Divider()
-            Text(
-                text = "30分钟",
-                fontSize = 12.sp
-            )
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxHeight(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = endTime,
-                fontSize = 30.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = date,
-                fontSize = 8.sp
+            ConferItem(
+                title = "实习大会",
+                startTime = "16:20",
+                endTime = "17:55",
+                date = "2023年12月6日",
+                location = "沙河校区 第二教学楼103",
+                leader = "李达"
             )
         }
     }
 }
 
-@Composable
-fun ImageButton(title: String, image: Painter, onClick: () -> Unit) {
-    IconButton(
-        modifier = Modifier
-            .width(100.dp)
-            .height(100.dp),
-        onClick = { onClick() }
-    ) {
-        Column(
-            modifier = Modifier
-                .width(100.dp)
-                .height(70.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Image(
-                painter = image,
-                contentDescription = "",
-                modifier = Modifier
-                    .size(50.dp))
-            Text(
-                text = title,
-                fontSize = 12.sp)
-        }
-    }
-}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -438,22 +298,6 @@ fun NaviList() {
         ) {}
         Spacer(modifier = Modifier.height(20.dp))
     }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun NaviItem(label : String, image : Painter, onClick : (String) -> Unit) {
-    NavigationDrawerItem(
-        label = { Text(text = label) },
-        selected = false,
-        modifier = Modifier
-            .padding(start = 10.dp, end = 10.dp)
-            .fillMaxWidth(),
-        onClick = { onClick(label) },
-        icon = {
-            Image(painter = image, contentDescription = "")
-        }
-    )
 }
 
 @Preview

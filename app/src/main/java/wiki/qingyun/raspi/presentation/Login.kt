@@ -229,6 +229,6 @@ fun LoginButton(username: String, password: String, onLogin: (String, String) ->
 @Composable
 fun LoginPreview() {
     RaspiTheme {
-//        Login(fun():Unit{})
+        Login(fun(Boo):Unit{})
     }
 }
