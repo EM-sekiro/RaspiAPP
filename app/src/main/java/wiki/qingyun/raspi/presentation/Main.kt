@@ -75,7 +75,7 @@ fun Main(jump: (String) -> Unit) {
                     }
                 }
             }
-            ButtonGroup()
+            ButtonGroup(jump)
             ConferList()
         }
     }
@@ -151,7 +151,7 @@ fun TopAppbar(openDraw : () -> Unit) {
 }
 
 @Composable
-fun ButtonGroup() {
+fun ButtonGroup(jump: (String) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -170,7 +170,7 @@ fun ButtonGroup() {
             title = "会议预定",
             image = painterResource(id = R.drawable.preserve)
         ) {
-            //onClick
+            jump("Preserve")
         }
         ImageButton(
             title = "会议签到",

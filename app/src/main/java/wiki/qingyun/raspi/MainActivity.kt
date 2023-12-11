@@ -11,8 +11,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import wiki.qingyun.raspi.presentation.Info
 import wiki.qingyun.raspi.presentation.Login
 import wiki.qingyun.raspi.presentation.Main
+import wiki.qingyun.raspi.presentation.Preserve
 import wiki.qingyun.raspi.ui.theme.RaspiTheme
 
 class MainActivity : ComponentActivity() {
@@ -37,6 +39,12 @@ class MainActivity : ComponentActivity() {
                             Main {
                                 layout = it
                             }
+                        }
+                        "Info" -> {
+                            Info()
+                        }
+                        "Preserve" -> {
+                            Preserve()
                         }
                         else -> {
                             Main {
