@@ -49,19 +49,20 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import wiki.qingyun.raspi.R
 import wiki.qingyun.raspi.components.ConferItem
+import wiki.qingyun.raspi.components.DateContainer
 import wiki.qingyun.raspi.components.ImageButton
 import wiki.qingyun.raspi.components.NaviItem
 import wiki.qingyun.raspi.ui.theme.RaspiTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Main() {
+fun Main(jump: (String) -> Unit) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            NavigationDraw()
+            NavigationDraw(jump)
         }) {
         Column(
             modifier = Modifier
@@ -86,7 +87,8 @@ fun Main() {
 fun TopAppbar(openDraw : () -> Unit) {
     CenterAlignedTopAppBar(
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0xFFD8E9E4)
+//            containerColor = Color(0xFFD8E9E4)
+            containerColor = Color(0xFFFFFFFF)
         ),
         title = {  },
         navigationIcon = {
@@ -154,7 +156,8 @@ fun ButtonGroup() {
         modifier = Modifier
             .fillMaxWidth()
             .height(100.dp)
-            .background(color = Color(0xFFD8E9E4)),
+//            .background(color = Color(0xFFD8E9E4)),
+            .background(color = Color(0xFFFFFFFF)),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         ImageButton(
@@ -197,23 +200,33 @@ fun ConferList() {
             .verticalScroll(rememberScrollState())
     ) {
         repeat(10) {
-            ConferItem(
-                title = "实习大会",
-                startTime = "16:20",
-                endTime = "17:55",
-                date = "2023年12月6日",
-                location = "沙河校区 第二教学楼103",
-                leader = "李达"
-            )
+            DateContainer(
+                date = "12月6日",
+                day = "星期三"
+            ){
+                ConferItem(
+                    title = "实习大会",
+                    startTime = "16:20",
+                    endTime = "17:55",
+                    date = "2023年12月6日",
+                    location = "沙河校区 第二教学楼103",
+                    leader = "李达"
+                )
+                ConferItem(
+                    title = "实习大会",
+                    startTime = "16:20",
+                    endTime = "17:55",
+                    date = "2023年12月6日",
+                    location = "沙河校区 第二教学楼103",
+                    leader = "李达"
+                )
+            }
         }
     }
 }
 
-
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NavigationDraw() {
+fun NavigationDraw(jump: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -222,7 +235,7 @@ fun NavigationDraw() {
     ) {
         NaviImage()
         NaviInfo()
-        NaviList()
+        NaviList(jump)
     }
 }
 
@@ -274,7 +287,7 @@ fun NaviInfo() {
 }
 
 @Composable
-fun NaviList() {
+fun NaviList(jump: (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -282,20 +295,20 @@ fun NaviList() {
         NaviItem(
             label = "个人信息",
             image = painterResource(id = R.drawable.info)
-        ) {}
+        ) {jump("Info")}
         NaviItem(
             label = "日程",
             image = painterResource(id = R.drawable.info)
-        ) {}
+        ) {jump("Calendar")}
         NaviItem(
             label = "设置",
             image = painterResource(id = R.drawable.info)
-        ) {}
+        ) {jump("Setting")}
         Spacer(modifier = Modifier.weight(1f))
         NaviItem(
             label = "退出登录",
             image = painterResource(id = R.drawable.info)
-        ) {}
+        ) {jump("Login")}
         Spacer(modifier = Modifier.height(20.dp))
     }
 }
@@ -304,7 +317,7 @@ fun NaviList() {
 @Composable
 fun MainPreview() {
     RaspiTheme {
-        Main()
-//        NavigationDraw()
+        Main {}
+//        NavigationDraw {}
     }
 }

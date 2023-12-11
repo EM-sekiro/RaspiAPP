@@ -1,5 +1,6 @@
 package wiki.qingyun.raspi.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,7 +10,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -17,11 +20,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import wiki.qingyun.raspi.R
 import wiki.qingyun.raspi.ui.theme.RaspiTheme
 
 @Composable
@@ -32,8 +39,10 @@ fun ConferItem(
     date: String,
     location: String,
     leader: String,
-    containerColor: Color = Color(0xFFD8E9E4),
-    contentColor: Color = Color(0xFFcff0da)
+//    containerColor: Color = Color(0xFFD8E9E4),
+//    contentColor: Color = Color(0xFFcff0da)
+    containerColor: Color = Color(0xFFFFFFFF),
+    contentColor: Color = Color(0xFFFFFFFF)
 ) {
     Column(
         modifier = Modifier
@@ -106,6 +115,15 @@ fun ConferItem(
                             fontSize = 13.sp
                         )
                         Spacer(modifier = Modifier.width(43.dp))
+                        Image(
+                            painter = painterResource(id = R.drawable.images),
+                            contentDescription = "",
+                            modifier = Modifier
+                                .clip(CircleShape)
+                                .size(20.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(modifier = Modifier.width(5.dp))
                         Text(
                             text = leader,
                             fontSize = 13.sp
@@ -191,8 +209,7 @@ fun ConferItemPreview() {
             endTime = "17:55",
             date = "2023年12月6日",
             location = "沙河校区 第二教学楼103",
-            leader = "李达",
-            containerColor = Color(0xFFcff09e),
-            contentColor = Color(0xFFcff0da))
+            leader = "李达"
+        )
     }
 }
