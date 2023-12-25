@@ -1,12 +1,17 @@
 package wiki.qingyun.raspi.presentation
 
 import android.app.TimePickerDialog
+import android.nfc.Tag
 import android.os.Build
+import android.util.Log
 import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +24,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DatePicker
@@ -32,6 +39,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
@@ -51,7 +59,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.TestModifierUpdaterLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -60,6 +76,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import wiki.qingyun.raspi.R
+import wiki.qingyun.raspi.components.ImageButton
 import wiki.qingyun.raspi.ui.theme.RaspiTheme
 import java.time.Instant
 import java.time.LocalDate
@@ -69,7 +86,7 @@ import kotlin.math.sin
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Preserve(jump : (String) -> Unit) {
+fun Preserve(jump : (page: String, msg: String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -85,7 +102,7 @@ fun Preserve(jump : (String) -> Unit) {
         Spacer(modifier = Modifier.height(20.dp))
         InputTime()
         Spacer(modifier = Modifier.height(20.dp))
-        InputPeople()
+        InputPeople(jump)
         Spacer(modifier = Modifier.height(20.dp))
         InputBrief()
     }
@@ -99,7 +116,7 @@ fun InputBrief() {
     Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(320.dp)
+                .height(290.dp)
                 .background(Color.Transparent),
     horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -123,18 +140,45 @@ fun InputBrief() {
     }
 }
 
+data class Person(val name: String, val photo: Int)
+
+@Composable
+fun PeopleItem(
+    person: Person,
+    page: String = "",
+    jump: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable { jump() }
+    ) {
+        Image(
+            //用户头像
+            painter = painterResource(id = person.photo),
+            contentDescription = "",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .clip(CircleShape)
+                .size(30.dp))
+        Spacer(modifier = Modifier.height(5.dp))
+        Text(
+            text = person.name,
+            fontSize = 10.sp
+        )
+    }
+}
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputPeople() {
+fun InputPeople(jump: (page: String, msg: String) -> Unit) {
     val roomName = arrayOf(
-        "沙河校区 二教103",
-        "沙河校区 二教204",
-        "沙河校区 信软楼304",
-        "沙河校区 信软楼306",
-        "沙河校区 主楼224"
+        Person("张三", R.drawable.images),
+        Person("李四", R.drawable.images),
+        Person("王五", R.drawable.images),
+        Person("赵六", R.drawable.images),
+        Person("钱七", R.drawable.images),
     )
-    var expanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf(roomName[0]) }
 
     Column(
         modifier = Modifier
@@ -142,48 +186,103 @@ fun InputPeople() {
             .background(Color.Transparent),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = {
-                expanded = !expanded
-            },
-            modifier = Modifier
-                .width(350.dp)
-        ) {
-            OutlinedTextField(
-                value = selectedText,
-                onValueChange = {},
-                readOnly = true,
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth(),
-                colors = OutlinedTextFieldDefaults.colors(
-//                disabledTextColor = Color.Transparent,
-                    focusedBorderColor = Color(0xFF4F7B39),
-                    unfocusedBorderColor = Color(0xFFB0B4B4),
-//                disabledIndicatorColor = Color.Transparent,
-                    focusedContainerColor = Color.Transparent,
-                    unfocusedContainerColor = Color.Transparent
-                ),
-                label = { Text(text = "参会人员") },
-            )
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                roomName.forEach { item ->
-                    DropdownMenuItem(
-                        text = { Text(text = item) },
-                        onClick = {
-                            selectedText = item
-                            expanded = false
-                        }
+        Column(modifier = Modifier
+            .width(350.dp)
+            .drawWithContent {
+                drawContent()
+                clipRect {
+                    val strokeWidth = Stroke.DefaultMiter
+                    val y = size.height
+
+                    drawLine(
+                        brush = SolidColor(Color(0xFFAFB3B3)),
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Square,
+                        start = Offset(x = 0f, y = 12 * density),
+                        end = Offset(x = 11 * density, y = 12 * density)
                     )
+
+                    drawLine(
+                        brush = SolidColor(Color(0xFFAFB3B3)),
+                        strokeWidth = strokeWidth,
+                        cap = StrokeCap.Square,
+                        start = Offset(x = 72 * density, y = 12 * density),
+                        end = Offset(x = size.width, y = 12 * density)
+                    )
+
+                    drawLine(
+                        brush = SolidColor(Color(0xFFAFB3B3)),
+                        strokeWidth = strokeWidth * 2,
+                        cap = StrokeCap.Square,
+                        start = Offset.Zero.copy(y = 13 * density),
+                        end = Offset.Zero.copy(y = size.height)
+                    )
+
+                    drawLine(
+                        brush = SolidColor(Color(0xFFAFB3B3)),
+                        strokeWidth = strokeWidth * 2,
+                        cap = StrokeCap.Square,
+                        start = Offset.Zero.copy(y = y),
+                        end = Offset(x = size.width, y = y)
+                    )
+
+                    drawLine(
+                        brush = SolidColor(Color(0xFFAFB3B3)),
+                        strokeWidth = strokeWidth * 2,
+                        cap = StrokeCap.Square,
+                        start = Offset(x = size.width, y = 13 * density),
+                        end = Offset(x = size.width, y = size.height)
+                    )
+
                 }
             }
+        ) {
+
+            Row(modifier = Modifier.padding(start = 16.dp, top = 3.dp)) {
+                Text(
+                    text = "参会人员",
+                    fontSize = 12.sp,
+                    color = Color(0xFF40484D)
+                )
+            }
+
+            Row (
+                modifier = Modifier
+                    .width(350.dp)
+                    .background(Color.Transparent)
+                    .padding(top = 10.dp, bottom = 15.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                roomName.forEach {
+                    PeopleItem(person = it){}
+                }
+                PeopleItem( person = Person("添加", R.drawable.add) ){
+                    jump("StaffList", "")
+                }
+            }
+
         }
     }
+//    Column(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .background(Color.Transparent),
+//        horizontalAlignment = Alignment.CenterHorizontally
+//    ) {
+//        Row (
+//            modifier = Modifier
+//                .width(350.dp)
+//                .background(Color.Transparent)
+//                .border(1.dp, Color(0xFFAFB3B3), RoundedCornerShape(4.dp))
+//                .padding(top = 15.dp, bottom = 15.dp),
+//            horizontalArrangement = Arrangement.SpaceEvenly
+//        ) {
+//            roomName.forEach {
+//                PeopleItem(person = it)
+//            }
+//            PeopleItem(person = Person("添加", R.drawable.images))
+//        }
+//    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -421,11 +520,11 @@ fun InputTitle() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppBar(jump: (String) -> Unit) {
+fun TopAppBar(jump: (page: String, msg: String) -> Unit) {
     CenterAlignedTopAppBar(
         title = {  },
         navigationIcon = {
-            IconButton(onClick = { jump("Main") }) {
+            IconButton(onClick = { jump("Main", "") }) {
                 Icon(
                     painter = painterResource(id = R.drawable.back),
                     contentDescription = ""
@@ -442,6 +541,7 @@ fun TopAppBar(jump: (String) -> Unit) {
                 color = Color(0xFF386A20),
                 modifier = Modifier
                     .padding(end = 5.dp)
+                    .clickable { jump("Main", "预定成功") }
             )
         }
     )
@@ -452,6 +552,6 @@ fun TopAppBar(jump: (String) -> Unit) {
 @Composable
 fun PreservePreview() {
     RaspiTheme {
-        Preserve(fun(String){})
+        Preserve(fun(String, S){})
     }
 }

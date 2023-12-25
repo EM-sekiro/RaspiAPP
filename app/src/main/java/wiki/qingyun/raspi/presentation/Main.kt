@@ -126,23 +126,21 @@ fun TopAppbar(openDraw : () -> Unit) {
             }
         },
         actions = {
-            Row {
-                var mesNum by remember {
-                    mutableStateOf("2")
-                }
-                IconButton(
-                    modifier = Modifier
-                        .padding(all = 5.dp),
-                    onClick = { /*TODO*/ }
-                ) {
-                    if(mesNum == "0") {
+            var mesNum by remember {
+                mutableStateOf("2")
+            }
+            IconButton(
+                onClick = { /*TODO*/ },
+                modifier = Modifier
+                    .size(60.dp)
+            ) {
+                if(mesNum == "0") {
+                    Icon(Icons.Filled.MailOutline, contentDescription = "")
+                }else {
+                    BadgedBox(
+                        badge = { Badge { Text(text = mesNum) } }
+                    ) {
                         Icon(Icons.Filled.MailOutline, contentDescription = "")
-                    }else {
-                        BadgedBox(
-                            badge = { Badge { Text(text = mesNum) } }
-                        ) {
-                            Icon(Icons.Filled.MailOutline, contentDescription = "")
-                        }
                     }
                 }
             }

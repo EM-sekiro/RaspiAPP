@@ -19,6 +19,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -44,13 +46,13 @@ import kotlin.concurrent.thread
 
 
 @Composable
-fun Info() {
+fun Info(jump : (String) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF0F1F5))
     ) {
-        TopAppbar()
+        TopBar(jump)
         PersonBar()
         InfoCard()
         PermissionCard()
@@ -59,14 +61,13 @@ fun Info() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopAppbar() {
+fun TopBar(jump: (String) -> Unit) {
     CenterAlignedTopAppBar(
         title = {  },
         navigationIcon = {
-            Image(
-                painter = painterResource(id = R.drawable.back),
-                contentDescription = ""
-            )
+            IconButton(onClick = { jump("Main") }) {
+                Icon(painter = painterResource(id = R.drawable.back), contentDescription = "")
+            }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
             containerColor = Color(0xFFF0F1F5)
@@ -229,6 +230,6 @@ fun PermissionCard() {
 @Composable
 fun InfoPreview() {
     RaspiTheme {
-        Info()
+        Info(fun(String){})
     }
 }

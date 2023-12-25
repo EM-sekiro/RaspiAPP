@@ -22,8 +22,7 @@ import wiki.qingyun.raspi.ui.theme.RaspiTheme
 fun ImageButton(title: String, image: Painter, onClick: () -> Unit) {
     IconButton(
         modifier = Modifier
-            .width(100.dp)
-            .height(100.dp),
+            .size(100.dp),
         onClick = { onClick() }
     ) {
         Column(
