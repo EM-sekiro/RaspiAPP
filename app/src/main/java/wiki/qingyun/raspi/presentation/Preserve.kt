@@ -57,6 +57,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.traceEventStart
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -86,32 +87,47 @@ import kotlin.math.sin
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun Preserve(jump : (page: String, msg: String) -> Unit) {
+fun Preserve(
+    conf: PreConf,
+    jump : (page: String, msg: String, conf: PreConf) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFFCFCF5))
     ) {
-        TopAppBar(jump)
+        TopAppBar(){page, msg ->
+            jump(page, msg, conf)
+        }
         Spacer(modifier = Modifier.height(15.dp))
-        InputTitle()
+        InputTitle(conf.title){
+            conf.title = it
+        }
         Spacer(modifier = Modifier.height(20.dp))
-        InputRoom()
+        InputRoom(conf.room){
+            conf.room = it
+        }
         Spacer(modifier = Modifier.height(20.dp))
-        InputDate()
+        InputDate(conf.date){
+            conf.date = it
+        }
         Spacer(modifier = Modifier.height(20.dp))
-        InputTime()
+        InputTime(conf.start, conf.end){start, end ->
+            conf.start = start
+            conf.end = end
+        }
         Spacer(modifier = Modifier.height(20.dp))
-        InputPeople(jump)
+        InputPeople(conf.people, conf, jump)
         Spacer(modifier = Modifier.height(20.dp))
-        InputBrief()
+        InputBrief(conf.brief){
+            conf.brief = it
+        }
     }
 }
 
 @Composable
-fun InputBrief() {
+fun InputBrief(record: String, change: (String) -> Unit) {
     var brief by remember {
-        mutableStateOf("")
+        mutableStateOf(record)
     }
     Column(
             modifier = Modifier
@@ -122,7 +138,7 @@ fun InputBrief() {
     ) {
         OutlinedTextField(
             value = brief,
-            onValueChange = { brief = it },
+            onValueChange = { brief = it; change(it) },
             colors = OutlinedTextFieldDefaults.colors(
 //                disabledTextColor = Color.Transparent,
                 focusedBorderColor = Color(0xFF4F7B39),
@@ -140,7 +156,26 @@ fun InputBrief() {
     }
 }
 
-data class Person(val name: String, val photo: Int)
+data class Person(val id: Int, val name: String, val photo: Int)
+
+data class PreConf (
+    var title: String,
+    var date: String,
+    var room: String,
+    var start: String,
+    var end: String,
+    var people: MutableList<Person>,
+    var brief: String) {
+    fun initialize() {
+        title = ""
+        date = ""
+        room = ""
+        start = ""
+        end = ""
+        people = mutableListOf()
+        brief = ""
+    }
+}
 
 @Composable
 fun PeopleItem(
@@ -169,16 +204,8 @@ fun PeopleItem(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputPeople(jump: (page: String, msg: String) -> Unit) {
-    val roomName = arrayOf(
-        Person("张三", R.drawable.images),
-        Person("李四", R.drawable.images),
-        Person("王五", R.drawable.images),
-        Person("赵六", R.drawable.images),
-        Person("钱七", R.drawable.images),
-    )
+fun InputPeople(people: MutableList<Person>, confer: PreConf, jump: (page: String, msg: String, conf: PreConf) -> Unit) {
 
     Column(
         modifier = Modifier
@@ -253,49 +280,35 @@ fun InputPeople(jump: (page: String, msg: String) -> Unit) {
                     .padding(top = 10.dp, bottom = 15.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                roomName.forEach {
-                    PeopleItem(person = it){}
+                if (people.size < 6) {
+                    people.forEach {
+                        PeopleItem(person = it){}
+                    }
+                }else {
+                    people.take(5).forEach{
+                        PeopleItem(person = it){}
+                    }
                 }
-                PeopleItem( person = Person("添加", R.drawable.add) ){
-                    jump("StaffList", "")
+                PeopleItem( person = Person(999, "添加", R.drawable.add) ){
+                    jump("StaffList", "", confer)
                 }
             }
 
         }
     }
-//    Column(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .background(Color.Transparent),
-//        horizontalAlignment = Alignment.CenterHorizontally
-//    ) {
-//        Row (
-//            modifier = Modifier
-//                .width(350.dp)
-//                .background(Color.Transparent)
-//                .border(1.dp, Color(0xFFAFB3B3), RoundedCornerShape(4.dp))
-//                .padding(top = 15.dp, bottom = 15.dp),
-//            horizontalArrangement = Arrangement.SpaceEvenly
-//        ) {
-//            roomName.forEach {
-//                PeopleItem(person = it)
-//            }
-//            PeopleItem(person = Person("添加", R.drawable.images))
-//        }
-//    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputTime() {
+fun InputTime(recordStart: String, recordEnd: String, change: (start:String, end:String) -> Unit) {
     var selectedTime_S by remember {
-        mutableStateOf("")
+        mutableStateOf(recordStart)
     }
     var expanded_S by remember {
         mutableStateOf(false)
     }
     var selectedTime_E by remember {
-        mutableStateOf("")
+        mutableStateOf(recordEnd)
     }
     var expanded_E by remember {
         mutableStateOf(false)
@@ -308,7 +321,7 @@ fun InputTime() {
     ) {
         OutlinedTextField(
             value = selectedTime_S,
-            onValueChange = {},
+            onValueChange = { change(it, selectedTime_E) },
             colors = OutlinedTextFieldDefaults.colors(
 //                disabledTextColor = Color.Transparent,
                 focusedBorderColor = Color(0xFF4F7B39),
@@ -328,7 +341,7 @@ fun InputTime() {
         )
         OutlinedTextField(
             value = selectedTime_E,
-            onValueChange = {},
+            onValueChange = { change(selectedTime_S, it) },
             colors = OutlinedTextFieldDefaults.colors(
 //                disabledTextColor = Color.Transparent,
                 focusedBorderColor = Color(0xFF4F7B39),
@@ -362,7 +375,7 @@ fun InputTime() {
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputDate() {
+fun InputDate(record: String, change: (String) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -374,11 +387,11 @@ fun InputDate() {
         }
         val datePickerState = rememberDatePickerState()
         var selectedDate by remember {
-            mutableStateOf("")
+            mutableStateOf(record)
         }
         OutlinedTextField(
             value = selectedDate,
-            onValueChange = {},
+            onValueChange = {  },
             colors = OutlinedTextFieldDefaults.colors(
 //                disabledTextColor = Color.Transparent,
                 focusedBorderColor = Color(0xFF4F7B39),
@@ -409,6 +422,7 @@ fun InputDate() {
                             val formattedDate = date?.format(formatter)
                             if (formattedDate != null) {
                                 selectedDate = formattedDate
+                                change(selectedDate)
                             }
                         }
                     ) {
@@ -425,7 +439,7 @@ fun InputDate() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputRoom() {
+fun InputRoom(record: String, change: (String) -> Unit) {
     val roomName = arrayOf(
         "沙河校区 二教103",
         "沙河校区 二教204",
@@ -434,7 +448,7 @@ fun InputRoom() {
         "沙河校区 主楼224"
     )
     var expanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf(roomName[0]) }
+    var selectedText by remember { mutableStateOf(if(record != "") record else roomName[0]) }
 
     Column(
         modifier = Modifier
@@ -452,7 +466,7 @@ fun InputRoom() {
         ) {
             OutlinedTextField(
                 value = selectedText,
-                onValueChange = {},
+                onValueChange = { change(it) },
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                 modifier = Modifier
@@ -477,6 +491,7 @@ fun InputRoom() {
                         text = { Text(text = item) },
                         onClick = {
                             selectedText = item
+                            change(item)
                             expanded = false
                         }
                     )
@@ -488,9 +503,9 @@ fun InputRoom() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputTitle() {
+fun InputTitle(record: String, change: (String) -> Unit) {
     var title by remember {
-        mutableStateOf("")
+        mutableStateOf(record)
     }
     Column(
         modifier = Modifier
@@ -500,7 +515,7 @@ fun InputTitle() {
     ) {
         OutlinedTextField(
             value = title,
-            onValueChange = { title = it },
+            onValueChange = { title = it; change(it) },
             colors = OutlinedTextFieldDefaults.colors(
 //                disabledTextColor = Color.Transparent,
                 focusedBorderColor = Color(0xFF4F7B39),
@@ -552,6 +567,15 @@ fun TopAppBar(jump: (page: String, msg: String) -> Unit) {
 @Composable
 fun PreservePreview() {
     RaspiTheme {
-        Preserve(fun(String, S){})
+        val conf = PreConf(
+            title = "",
+            date = "",
+            room = "",
+            start = "",
+            end = "",
+            people = mutableListOf(),
+            brief = ""
+        )
+        Preserve(conf, fun(String, S, conf){})
     }
 }

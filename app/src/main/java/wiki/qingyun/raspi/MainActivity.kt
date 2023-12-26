@@ -23,12 +23,16 @@ import getUserLocation
 import wiki.qingyun.raspi.presentation.Info
 import wiki.qingyun.raspi.presentation.Login
 import wiki.qingyun.raspi.presentation.Main
+import wiki.qingyun.raspi.presentation.Person
+import wiki.qingyun.raspi.presentation.PreConf
 import wiki.qingyun.raspi.presentation.Preserve
 import wiki.qingyun.raspi.presentation.StaffList
 import wiki.qingyun.raspi.presentation.StaffListPreview
 import wiki.qingyun.raspi.ui.theme.RaspiTheme
 
 class MainActivity : ComponentActivity() {
+
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +41,15 @@ class MainActivity : ComponentActivity() {
                 var layout by remember {
                     mutableStateOf("Login")
                 }
+                var conf = PreConf(
+                    title = "",
+                    date = "",
+                    room = "",
+                    start = "",
+                    end = "",
+                    people = mutableListOf(),
+                    brief = ""
+                )
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
                     when(layout) {
@@ -58,11 +71,15 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         "Preserve" -> {
-                            Preserve {page, msg ->
-                                layout = page
+                            Preserve(conf) {page, msg, confer ->
                                 if(msg != "") {
                                     Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
                                 }
+                                if(page == "Main")
+                                    conf.initialize()
+                                if(page == "StaffList")
+                                    conf = confer
+                                layout = page
                             }
                         }
                         "Calendar" -> {
@@ -71,8 +88,9 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         "StaffList" -> {
-                            StaffList {
-                                layout = it
+                            StaffList(conf.people) {page, person ->
+                                conf.people = person
+                                layout = page
                             }
                         }
                         else -> {
