@@ -56,7 +56,7 @@ import wiki.qingyun.raspi.ui.theme.RaspiTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Main(jump: (String) -> Unit) {
+fun Main(confList: MutableList<Confer>, jump: (String) -> Unit) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     ModalNavigationDrawer(
@@ -76,7 +76,7 @@ fun Main(jump: (String) -> Unit) {
                 }
             }
             ButtonGroup(jump)
-            ConferList()
+            ConferList(confList)
         }
     }
     
@@ -153,7 +153,7 @@ fun ButtonGroup(jump: (String) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .height(110.dp)
 //            .background(color = Color(0xFFD8E9E4)),
             .background(color = Color(0xFFFFFFFF)),
         horizontalArrangement = Arrangement.SpaceEvenly
@@ -191,33 +191,42 @@ fun ButtonGroup(jump: (String) -> Unit) {
     }
 }
 
+data class Confer (
+    var title: String,
+    var currentTime: String,
+    var startTime: String,
+    var endTime: String,
+    var date: String,
+    var day : String,
+    var location: String,
+    var leader: String,
+)
+
 @Composable
-fun ConferList() {
+fun ConferList(confList : MutableList<Confer>) {
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
     ) {
-        repeat(10) {
-            DateContainer(
-                date = "12月6日",
-                day = "星期三"
-            ){
-                ConferItem(
-                    title = "实习大会",
-                    startTime = "16:20",
-                    endTime = "17:55",
-                    date = "2023年12月6日",
-                    location = "沙河校区 第二教学楼103",
-                    leader = "李达"
-                )
-                ConferItem(
-                    title = "实习大会",
-                    startTime = "16:20",
-                    endTime = "17:55",
-                    date = "2023年12月6日",
-                    location = "沙河校区 第二教学楼103",
-                    leader = "李达"
-                )
+        var currentDate = ""
+        val list = confList.sortedWith(compareBy({ it.date }, { it.startTime }))
+        val size = list.size
+        var flag = 0
+        while(flag < size){
+            DateContainer(date = list[flag].date, day = list[flag].day) {
+                currentDate = list[flag].date
+                while (flag < size && list[flag].date == currentDate){
+                    ConferItem(
+                        title = list[flag].title,
+                        currentTime = list[flag].currentTime,
+                        startTime = list[flag].startTime,
+                        endTime = list[flag].endTime,
+                        date = list[flag].date,
+                        location = list[flag].location,
+                        leader = list[flag].leader
+                    )
+                    flag++
+                }
             }
         }
     }
@@ -315,7 +324,109 @@ fun NaviList(jump: (String) -> Unit) {
 @Composable
 fun MainPreview() {
     RaspiTheme {
-        Main {}
+        var confList =  mutableListOf(
+            Confer(
+                title = "实习大会",
+                currentTime = "17:00",
+                startTime = "16:20",
+                endTime = "17:55",
+                date = "2023年12月6日",
+                day = "星期三",
+                location = "沙河校区 第二教学楼103",
+                leader = "李达"
+            ),
+            Confer(
+                title = "技术讲座",
+                currentTime = "15:30",
+                startTime = "14:00",
+                endTime = "16:30",
+                date = "2023年12月8日",
+                day = "星期五",
+                location = "沙河校区 第二教学楼103",
+                leader = "张华"
+            ),
+            Confer(
+                title = "学术研讨",
+                currentTime = "10:00",
+                startTime = "09:30",
+                endTime = "12:00",
+                date = "2023年12月11日",
+                day = "星期一",
+                location = "沙河校区 第二教学楼104",
+                leader = "王明"
+            ),
+            Confer(
+                title = "创业峰会",
+                currentTime = "14:30",
+                startTime = "13:00",
+                endTime = "16:00",
+                date = "2023年12月13日",
+                day = "星期三",
+                location = "主校区 创新中心大厅",
+                leader = "陈志"
+            ),
+            Confer(
+                title = "行业论坛",
+                currentTime = "11:30",
+                startTime = "10:00",
+                endTime = "13:00",
+                date = "2023年12月15日",
+                day = "星期五",
+                location = "沙河校区 综合楼205",
+                leader = "刘文"
+            ),
+            Confer(
+                title = "就业指导",
+                currentTime = "16:30",
+                startTime = "15:00",
+                endTime = "17:30",
+                date = "2023年12月18日",
+                day = "星期一",
+                location = "主校区 就业中心",
+                leader = "张明"
+            ),
+            Confer(
+                title = "学术报告",
+                currentTime = "09:30",
+                startTime = "09:00",
+                endTime = "11:00",
+                date = "2023年12月20日",
+                day = "星期三",
+                location = "沙河校区 图书馆报告厅",
+                leader = "王磊"
+            ),
+            Confer(
+                title = "创新竞赛",
+                currentTime = "14:00",
+                startTime = "13:00",
+                endTime = "16:00",
+                date = "2023年12月22日",
+                day = "星期五",
+                location = "主校区 创新中心",
+                leader = "李华"
+            ),
+            Confer(
+                title = "学科讲座",
+                currentTime = "15:30",
+                startTime = "14:00",
+                endTime = "16:30",
+                date = "2023年12月25日",
+                day = "星期一",
+                location = "沙河校区 第一教学楼201",
+                leader = "刘明"
+            ),
+            Confer(
+                title = "学术研究会",
+                currentTime = "11:00",
+                startTime = "10:30",
+                endTime = "13:00",
+                date = "2023年12月28日",
+                day = "星期四",
+                location = "主校区 学术报告厅",
+                leader = "张磊"
+            )
+        )
+        Main(confList) {}
 //        NavigationDraw {}
     }
 }

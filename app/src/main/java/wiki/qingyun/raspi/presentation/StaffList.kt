@@ -113,13 +113,13 @@ fun TopBarS(jump: (page: String, result: String) -> Unit) {
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0xFFFCFCF5)
+            containerColor = Color.White
         ),
         actions = {
             Text(
                 text = "完成",
                 fontSize = 18.sp,
-                color = Color(0xFF386A20),
+                color = Color(0xFF79bd9a),
                 modifier = Modifier
                     .padding(end = 5.dp)
                     .clickable { jump("Preserve", "finish") }
@@ -136,8 +136,10 @@ fun StaffListPreview() {
             title = "",
             date = "",
             room = "",
-            start = "",
-            end = "",
+            hours_S = 0,
+            hours_E = 0,
+            minutes_S = 0,
+            minutes_E = 0,
             people = mutableListOf(),
             brief = ""
         )

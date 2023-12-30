@@ -54,6 +54,7 @@ fun DateContainerPreview() {
         DateContainer("12月6日", "星期三"){
             ConferItem(
                 title = "实习大会",
+                currentTime = "16:00",
                 startTime = "16:20",
                 endTime = "17:55",
                 date = "2023年12月6日",
@@ -62,6 +63,7 @@ fun DateContainerPreview() {
             )
             ConferItem(
                 title = "实习大会",
+                currentTime = "17:00",
                 startTime = "16:20",
                 endTime = "17:55",
                 date = "2023年12月6日",

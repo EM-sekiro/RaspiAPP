@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
@@ -76,6 +77,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.fragment.project.components.WheelPicker
 import wiki.qingyun.raspi.R
 import wiki.qingyun.raspi.components.ImageButton
 import wiki.qingyun.raspi.ui.theme.RaspiTheme
@@ -93,7 +95,7 @@ fun Preserve(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFCFCF5))
+            .background(Color.White)
     ) {
         TopAppBar(){page, msg ->
             jump(page, msg, conf)
@@ -111,9 +113,15 @@ fun Preserve(
             conf.date = it
         }
         Spacer(modifier = Modifier.height(20.dp))
-        InputTime(conf.start, conf.end){start, end ->
-            conf.start = start
-            conf.end = end
+        InputTime(conf.hours_S, conf.hours_E, conf.minutes_S, conf.minutes_E){hours_S, hours_E, minutes_S, minutes_E ->
+            conf.hours_S = hours_S
+            conf.hours_E = hours_E
+            conf.minutes_S = minutes_S
+            conf.minutes_E = minutes_E
+            Log.i("hours_S", hours_S.toString())
+            Log.i("minutes_S", minutes_S.toString())
+            Log.i("hours_E", hours_E.toString())
+            Log.i("minutes_E", minutes_E.toString())
         }
         Spacer(modifier = Modifier.height(20.dp))
         InputPeople(conf.people, conf, jump)
@@ -162,16 +170,20 @@ data class PreConf (
     var title: String,
     var date: String,
     var room: String,
-    var start: String,
-    var end: String,
+    var hours_S: Int,
+    var hours_E: Int,
+    var minutes_S: Int,
+    var minutes_E: Int,
     var people: MutableList<Person>,
     var brief: String) {
     fun initialize() {
         title = ""
         date = ""
         room = ""
-        start = ""
-        end = ""
+        hours_S = 0
+        hours_E = 0
+        minutes_S = 0
+        minutes_E = 0
         people = mutableListOf()
         brief = ""
     }
@@ -300,15 +312,27 @@ fun InputPeople(people: MutableList<Person>, confer: PreConf, jump: (page: Strin
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InputTime(recordStart: String, recordEnd: String, change: (start:String, end:String) -> Unit) {
-    var selectedTime_S by remember {
-        mutableStateOf(recordStart)
+fun InputTime(
+    recordhours_S: Int,
+    recordhours_E: Int,
+    recordminutes_S: Int,
+    recordminutes_E: Int,
+    change: (hours_S: Int, hours_E: Int, minutes_S: Int, minutes_E: Int) -> Unit,
+) {
+    var hours_S by remember {
+        mutableStateOf(recordhours_S)
+    }
+    var minutes_S by remember {
+        mutableStateOf(recordminutes_S)
     }
     var expanded_S by remember {
         mutableStateOf(false)
     }
-    var selectedTime_E by remember {
-        mutableStateOf(recordEnd)
+    var hours_E by remember {
+        mutableStateOf(recordhours_E)
+    }
+    var minutes_E by remember {
+        mutableStateOf(recordminutes_E)
     }
     var expanded_E by remember {
         mutableStateOf(false)
@@ -320,8 +344,8 @@ fun InputTime(recordStart: String, recordEnd: String, change: (start:String, end
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         OutlinedTextField(
-            value = selectedTime_S,
-            onValueChange = { change(it, selectedTime_E) },
+            value = hours_S.toString().padStart(2, '0') + "点" + minutes_S.toString().padStart(2, '0') + "分",
+            onValueChange = {  },
             colors = OutlinedTextFieldDefaults.colors(
 //                disabledTextColor = Color.Transparent,
                 focusedBorderColor = Color(0xFF4F7B39),
@@ -335,13 +359,13 @@ fun InputTime(recordStart: String, recordEnd: String, change: (start:String, end
                 .width(165.dp),
             label = { Text(text = "开始时间") },
             readOnly = true,
-            trailingIcon = { IconButton(onClick = { expanded_S = !expanded_S  },) {
+            trailingIcon = { IconButton(onClick = { expanded_S = true  },) {
                 Icon(painter = painterResource(id = R.drawable.calendar), contentDescription = "")
             } },
         )
         OutlinedTextField(
-            value = selectedTime_E,
-            onValueChange = { change(selectedTime_S, it) },
+            value = hours_E.toString().padStart(2, '0') + "点" + minutes_E.toString().padStart(2, '0') + "分",
+            onValueChange = {  },
             colors = OutlinedTextFieldDefaults.colors(
 //                disabledTextColor = Color.Transparent,
                 focusedBorderColor = Color(0xFF4F7B39),
@@ -355,21 +379,93 @@ fun InputTime(recordStart: String, recordEnd: String, change: (start:String, end
                 .width(165.dp),
             label = { Text(text = "结束时间") },
             readOnly = true,
-            trailingIcon = { IconButton(onClick = { expanded_E = !expanded_E  },) {
+            trailingIcon = { IconButton(onClick = { expanded_E = true  },) {
                 Icon(painter = painterResource(id = R.drawable.calendar), contentDescription = "")
             } },
         )
-        if(expanded_E) {
-            AlertDialog(onDismissRequest = { expanded_E = false }) {
-                TimeInput(
-                    state = rememberTimePickerState(),
-                    colors = TimePickerDefaults.colors(
-                        containerColor = Color(0xFFFFFFFF)
-                    )
-                )
-            }
+        if(expanded_S || expanded_E) {
+            val hours = List(24) { it.toString().padStart(2, '0') + "点" }
+            val minutes = List(60) { it.toString().padStart(2, '0') + "分"}
+            var selectedHours by remember { mutableStateOf(0) }
+            var selectedMinutes by remember { mutableStateOf(0) }
+            AlertDialog(
+                onDismissRequest = {
+                    expanded_S = false
+                    expanded_E = false
+                },
+                title = { if(expanded_E) Text("会议结束时间") else Text("会议开始时间")},
+                confirmButton = {
+                    Button(onClick = {
+                        if(expanded_E){
+                            hours_E = selectedHours
+                            minutes_E = selectedMinutes
+                        }else {
+                            hours_S = selectedHours
+                            minutes_S = selectedMinutes
+                        }
+                        change(hours_S, hours_E, minutes_S, minutes_E)
+                        expanded_S = false
+                        expanded_E = false
+                    }) {
+                        Text("确认")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = {
+                        expanded_S = false
+                        expanded_E = false
+                    }) {
+                        Text("取消")
+                    }
+                },
+                text = {
+                    Row(
+                        modifier = Modifier
+                            .width(300.dp)
+                            .height(100.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        WheelPicker(
+                            modifier = Modifier
+                                .width(80.dp)
+                                .height(150.dp)
+                                .background(Color(0xFFE0EBF2)),
+                            data = hours,
+                            selectIndex = selectedHours,
+                            visibleCount = 4,
+                            onSelect = { index, item ->
+                                selectedHours = index
+                            },
+                            content = { item ->
+                                Text(text = item, fontSize = 18.sp)
+                            }
+                        )
+                        WheelPicker(
+                            modifier = Modifier
+                                .width(80.dp)
+                                .height(150.dp)
+                                .background(Color(0xFFE0EBF2)),
+                            data = minutes,
+                            selectIndex = selectedMinutes,
+                            visibleCount = 4,
+                            onSelect = { index, item ->
+                                selectedMinutes = index
+                            },
+                            content = { item ->
+                                Text(text = item, fontSize = 18.sp)
+                            }
+                        )
+                    }
+                }
+            )
+
         }
     }
+}
+
+fun<T> a(index: Int, item: T) {
+
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -547,13 +643,13 @@ fun TopAppBar(jump: (page: String, msg: String) -> Unit) {
             }
         },
         colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-            containerColor = Color(0xFFFCFCF5)
+            containerColor = Color.White
         ),
         actions = {
             Text(
                 text = "完成",
                 fontSize = 18.sp,
-                color = Color(0xFF386A20),
+                color = Color(0xFF79bd9a),
                 modifier = Modifier
                     .padding(end = 5.dp)
                     .clickable { jump("Main", "预定成功") }
@@ -571,8 +667,10 @@ fun PreservePreview() {
             title = "",
             date = "",
             room = "",
-            start = "",
-            end = "",
+            hours_S = 0,
+            hours_E = 0,
+            minutes_S = 0,
+            minutes_E = 0,
             people = mutableListOf(),
             brief = ""
         )
